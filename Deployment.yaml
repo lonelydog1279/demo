@@ -21,7 +21,7 @@ spec:
         "kubernetes.io/os": linux
       containers:
         - name: demo
-          image:  {{WEB_IMAGE_NAME}}
+          image:  {{ACR_LOGINSERVER}}/demo:v{{BUILD_NUMBER}}
           ports:
             - containerPort: 8080
           resources:
