@@ -33,6 +33,7 @@ public class BasicController {
     @ResponseBody
     public String hello(@RequestParam(name = "name", defaultValue = "unknown user") String name) {
         return "Hello " + name;
+
     }
 
     // http://127.0.0.1:8080/user
