@@ -105,5 +105,4 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].title").value("本草纲目"));
     }
-
 }
