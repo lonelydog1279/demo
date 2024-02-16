@@ -5,7 +5,6 @@ import com.example.demo.eo.BookEo;
 import com.example.demo.mapper.BookMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -48,7 +47,7 @@ public class BookServiceTest {
 
         Optional<BookDto> result = bookService.add(bookInput);
 
-        assertTrue(bookInput.getId() > 0);
+        assertEquals(result.get().getPublishTime(),2020);
     }
 
     @Test
@@ -68,7 +67,7 @@ public class BookServiceTest {
     }
 
     @Test
-    public void testUserListAll() {
+    public void testBookListAll() {
         BookEo bookReturn = new BookEo();
         bookReturn.setId(1);
         bookReturn.setTitle("本草纲目");

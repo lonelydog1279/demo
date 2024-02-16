@@ -37,7 +37,7 @@ public class BookMapperTest {
     @Test
     public void testQueryById() {
 
-        BookEo bookEo = bookMapper.queryById(1);
+        BookEo bookEo = bookMapper.queryById(2);
 
         assertEquals("本草纲目", bookEo.getTitle());
 
@@ -48,7 +48,7 @@ public class BookMapperTest {
 
         List<BookEo> bookEos = bookMapper.listAll();
 
-        assertEquals("本草纲目", bookEos.get(0).getTitle());
+        assertEquals("本草纲目", bookEos.get(1).getTitle());
     }
 
     @Test
