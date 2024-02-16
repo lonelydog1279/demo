@@ -1,7 +1,7 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.dto.BookDto;
-import com.example.service.BookService;
+import com.example.demo.dto.BookDto;
+import com.example.demo.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

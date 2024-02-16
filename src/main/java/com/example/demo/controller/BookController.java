@@ -1,8 +1,8 @@
-package com.example.controller;
+package com.example.demo.controller;
 
-import com.example.dto.BookDto;
-import com.example.dto.Response;
-import com.example.service.BookService;
+import com.example.demo.dto.BookDto;
+import com.example.demo.dto.Response;
+import com.example.demo.service.BookService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 

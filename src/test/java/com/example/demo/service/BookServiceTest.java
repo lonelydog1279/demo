@@ -1,8 +1,8 @@
-package com.example.service;
+package com.example.demo.service;
 
-import com.example.dto.BookDto;
-import com.example.eo.BookEo;
-import com.example.mapper.BookMapper;
+import com.example.demo.dto.BookDto;
+import com.example.demo.eo.BookEo;
+import com.example.demo.mapper.BookMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

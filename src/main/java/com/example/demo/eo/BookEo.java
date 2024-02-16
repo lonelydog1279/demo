@@ -1,4 +1,4 @@
-package com.example.eo;
+package com.example.demo.eo;
 
 import lombok.Data;
 

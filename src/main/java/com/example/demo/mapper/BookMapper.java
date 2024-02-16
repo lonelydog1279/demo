@@ -1,7 +1,7 @@
-package com.example.mapper;
+package com.example.demo.mapper;
 
 
-import com.example.eo.BookEo;
+import com.example.demo.eo.BookEo;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
