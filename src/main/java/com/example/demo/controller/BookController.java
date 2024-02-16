@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ public class BookController {
 
     @PostMapping("/add")
     @ResponseBody
-    public Response add(BookDto bookDto){
+    public Response add(BookDto bookDto) {
         Response response = new Response();
         Optional<BookDto> result = bookService.add(bookDto);
         response.setData(result.get());
@@ -28,7 +29,7 @@ public class BookController {
 
     @GetMapping("/get/{id}")
     @ResponseBody
-    public Response query(@PathVariable("id") Integer id){
+    public Response query(@PathVariable("id") Integer id) {
         Response response = new Response();
         Optional<BookDto> result = bookService.query(id);
         response.setData(result.get());
@@ -37,10 +38,32 @@ public class BookController {
 
     @GetMapping("/list")
     @ResponseBody
-    public Response list(){
+    public Response list() {
         Response response = new Response();
-        Optional<List<BookDto>> result =bookService.list();
+        Optional<List<BookDto>> result = bookService.list();
         response.setData(result.get());
         return response;
     }
+
+    @DeleteMapping("/delete")
+    @ResponseBody
+    public Response list(Integer id) {
+        Response response = new Response();
+        Integer count = bookService.delete(id);
+        HashMap<String, Integer> map = new HashMap<>();
+        map.put("count", count);
+        response.setData(map);
+        return response;
+    }
+
+    @PutMapping("/update")
+    @ResponseBody
+    public Response update(BookDto bookDto) {
+        Response response = new Response();
+        Optional<BookDto> update = bookService.update(bookDto);
+        response.setData(update.get());
+        return response;
+    }
+
+
 }

@@ -4,8 +4,10 @@ import com.example.demo.dto.BookDto;
 import com.example.demo.eo.BookEo;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.service.BookService;
+import com.example.demo.util.BeanUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,10 +23,10 @@ public class BookServiceImpl implements BookService {
     @Override
     public Optional<BookDto> add(BookDto bookDto) {
         BookEo bookEoInput = new BookEo();
-        BeanUtils.copyProperties(bookDto,bookEoInput);
-        BookEo bookEoRes = bookMapper.saveOne(bookEoInput);
+        BeanUtils.copyProperties(bookDto, bookEoInput);
+        bookMapper.saveOne(bookEoInput);
         BookDto bookDtoRes = new BookDto();
-        BeanUtils.copyProperties(bookEoRes,bookDtoRes);
+        BeanUtils.copyProperties(bookEoInput, bookDtoRes);
         return Optional.of(bookDtoRes);
     }
 
@@ -33,7 +35,7 @@ public class BookServiceImpl implements BookService {
 
         BookEo bookEoRes = bookMapper.queryById(id);
         BookDto bookDtoRes = new BookDto();
-        BeanUtils.copyProperties(bookEoRes,bookDtoRes);
+        BeanUtils.copyProperties(bookEoRes, bookDtoRes);
         return Optional.of(bookDtoRes);
     }
 
@@ -42,11 +44,33 @@ public class BookServiceImpl implements BookService {
 
         List<BookEo> bookEoRes = bookMapper.listAll();
         List<BookDto> bookDtoListRes = new ArrayList<>();
-        for(BookEo book : bookEoRes){
+        for (BookEo book : bookEoRes) {
             BookDto bookDto = new BookDto();
-            BeanUtils.copyProperties(book,bookDto);
+            BeanUtils.copyProperties(book, bookDto);
             bookDtoListRes.add(bookDto);
         }
         return Optional.of(bookDtoListRes);
     }
+
+    @Override
+    public Integer delete(Integer id) {
+
+        Integer count = bookMapper.delete(id);
+        return count;
+    }
+
+    @Override
+    public Optional<BookDto> update(BookDto bookDto) {
+
+        BookEo bookEo = bookMapper.queryById(bookDto.getId());
+        Integer count = bookMapper.update(bookDto);
+        BeanMap beanMap = BeanMap.create(bookEo);
+        if (count > 0) {
+            BeanUtil.beanCopy(beanMap, bookDto);
+        }
+        Optional<BookDto> res = Optional.of(bookDto);
+
+        return res;
+    }
+
 }

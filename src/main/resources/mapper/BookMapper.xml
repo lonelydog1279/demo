@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.BookMapper">
+    <insert id="saveOne" parameterType="com.example.demo.eo.BookEo" useGeneratedKeys="true" keyProperty="id">
+        insert into book(`title`,`author`,`publish_time`,`book_num`,`desc`) values(#{title},#{author},#{publishTime},#{bookNum},#{desc});
+    </insert>
+
+    <select id="queryById" parameterType="Integer" resultType="com.example.demo.eo.BookEo">
+        select `id`, `title`,`author`,`publish_time`,`book_num`,`desc` from book where id = #{id}
+    </select>
+
+    <select id="listAll" resultType="com.example.demo.eo.BookEo">
+        select `id`, `title`,`author`,`publish_time`,`book_num`,`desc` from book
+    </select>
+
+    <delete id="delete" parameterType="java.lang.Integer" >
+        delete from book where id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.example.demo.dto.BookDto"  >
+        update book
+        <set>
+            <if test="title != null and title != ''">
+              `title` = #{title},
+            </if>
+            <if test="author != null and author != ''">
+              `author` = #{author},
+            </if>
+            <if test="publishTime != null">
+              `publish_time` = #{publishTime},
+            </if>
+            <if test="bookNum != null and bookNum != ''">
+              `book_num`` = #{bookNum},
+            </if>
+            <if test="desc != null and desc != ''">
+              `desc` = #{desc},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

@@ -11,4 +11,8 @@ public interface BookService {
     Optional<BookDto> query(Integer id);
 
     Optional<List<BookDto>> list();
+
+    Integer delete(Integer id);
+
+    Optional<BookDto> update(BookDto bookDto);
 }

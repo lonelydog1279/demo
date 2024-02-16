@@ -4,6 +4,7 @@ import com.example.demo.dto.BookDto;
 import com.example.demo.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +17,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -104,5 +105,48 @@ public class BookControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].title").value("本草纲目"));
+    }
+
+    @Test
+    public void testBookDelete() throws Exception {
+
+        Mockito.when(bookService.delete(Mockito.anyInt())).thenReturn(1);
+        mockMvc.perform(delete("/book/delete")
+                        .param("id", "1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"));
+
+    }
+
+    @Test
+    public void testBookUpdate() throws Exception {
+
+        BookDto bookDto = new BookDto();
+        Integer randomPublishTime = Math.abs(new Random().nextInt() % 2024);
+        bookDto.setId(1);
+        bookDto.setTitle("狂人日记");
+        bookDto.setAuthor("鲁迅");
+        bookDto.setPublishTime(randomPublishTime);
+
+        BookDto bookReturn = new BookDto();
+        BeanUtils.copyProperties(bookDto, bookReturn);
+
+        Optional<BookDto> res = Optional.of(bookReturn);
+
+        Mockito.when(bookService.update(bookDto)).thenReturn(res);
+
+        mockMvc.perform(put("/book/update")
+                        .param("id", "1")
+                        .param("title", "狂人日记")
+                        .param("publishTime", randomPublishTime.toString())
+                        .param("author","鲁迅")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.publishTime").value(randomPublishTime));
+
     }
 }
