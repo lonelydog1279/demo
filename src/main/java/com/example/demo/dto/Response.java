@@ -3,8 +3,8 @@ package com.example.demo.dto;
 import java.io.Serializable;
 
 public class Response implements Serializable {
-    private int code;
-    private String message;
+    private int code = 0;
+    private String message = "SUCCESS";
     private Object data;
 
     public int getCode() {
