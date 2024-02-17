@@ -48,9 +48,9 @@ public class BookController {
 
     @DeleteMapping("/delete")
     @ResponseBody
-    public Response list(Integer id) {
+    public Response list(@RequestBody BookDto bookDto) {
         Response response = new Response();
-        Integer count = bookService.delete(id);
+        Integer count = bookService.delete(bookDto.getId());
         HashMap<String, Integer> map = new HashMap<>();
         map.put("count", count);
         response.setData(map);

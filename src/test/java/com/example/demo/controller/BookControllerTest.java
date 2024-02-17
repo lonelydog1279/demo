@@ -107,10 +107,12 @@ public class BookControllerTest {
     @Test
     public void testBookDelete() throws Exception {
 
+        String param = "{\"id\": 1}";
+
         Mockito.when(bookService.delete(Mockito.anyInt())).thenReturn(1);
         mockMvc.perform(delete("/book/delete")
-                        .param("id", "1")
-                        .accept(MediaType.APPLICATION_JSON))
+                        .content(param)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"));
