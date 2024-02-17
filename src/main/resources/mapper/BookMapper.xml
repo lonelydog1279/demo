@@ -33,7 +33,7 @@
               `publish_time` = #{publishTime},
             </if>
             <if test="bookNum != null and bookNum != ''">
-              `book_num`` = #{bookNum},
+              `book_num` = #{bookNum},
             </if>
             <if test="desc != null and desc != ''">
               `desc` = #{desc},
