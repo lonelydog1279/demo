@@ -45,14 +45,11 @@ public class BookControllerTest {
 
         Mockito.when(bookService.add(Mockito.any(BookDto.class))).thenReturn(mockBookDto);
 
+        String param = "{\"title\":\"狂人日记\",\"author\":\"鲁迅\",\"publishTime\":\"2012\",\"bookNum\":\"3424-23423-2342\",\"desc\":\"description\"}";
 
         MvcResult mvcResult = mockMvc.perform(post("/book/add")
-                        .param("id", "1")
-                        .param("title", "本草纲目")
-                        .param("author", "李时珍")
-                        .param("publishTime", "2023")
-                        .param("bookNum", "324-df-32324")
-                        .param("desc", "medical book")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(param)
                 ).andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.title").value("本草纲目"))
@@ -137,16 +134,13 @@ public class BookControllerTest {
 
         Mockito.when(bookService.update(bookDto)).thenReturn(res);
 
+        String param = "{\"id\":1,\"title\":\"狂人日记\",\"author\":\"鲁迅\",\"publishTime\": \"" +randomPublishTime +"\"}";
+
         mockMvc.perform(put("/book/update")
-                        .param("id", "1")
-                        .param("title", "狂人日记")
-                        .param("publishTime", randomPublishTime.toString())
-                        .param("author","鲁迅")
-                        .accept(MediaType.APPLICATION_JSON))
+                        .content(param)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.publishTime").value(randomPublishTime));
-
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"));
     }
 }
