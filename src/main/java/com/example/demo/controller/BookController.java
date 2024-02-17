@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/book")
+@CrossOrigin(origins = "*")
 public class BookController {
 
     @Resource
@@ -20,7 +21,7 @@ public class BookController {
 
     @PostMapping("/add")
     @ResponseBody
-    public Response add(BookDto bookDto) {
+    public Response add(@RequestBody BookDto bookDto) {
         Response response = new Response();
         Optional<BookDto> result = bookService.add(bookDto);
         response.setData(result.get());
@@ -58,7 +59,7 @@ public class BookController {
 
     @PutMapping("/update")
     @ResponseBody
-    public Response update(BookDto bookDto) {
+    public Response update(@RequestBody BookDto bookDto) {
         Response response = new Response();
         Optional<BookDto> update = bookService.update(bookDto);
         response.setData(update.get());
