@@ -22,6 +22,9 @@ public class BookController {
     @PostMapping("/add")
     @ResponseBody
     public Response add(@RequestBody BookDto bookDto) {
+
+        //TODO handle exception
+        //TODO add global exception handler
         Response response = new Response();
         Optional<BookDto> result = bookService.add(bookDto);
         response.setData(result.orElseGet(BookDto::new));
