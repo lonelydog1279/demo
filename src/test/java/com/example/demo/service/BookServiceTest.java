@@ -29,23 +29,26 @@ public class BookServiceTest {
     public void testBookAdd() {
         BookEo bookReturn = new BookEo();
         bookReturn.setId(1);
-        bookReturn.setTitle("本草纲目");
-        bookReturn.setAuthor("李时珍");
+        bookReturn.setTitle("The Big Sleep");
+        bookReturn.setAuthor("Mr. unknown");
         bookReturn.setPublishTime(2020);
         bookReturn.setBookNum("324-df-32324");
         bookReturn.setDesc("medical book");
 
+        //TODO validate the format,length of isbn
+        //TODO validate the publishTime....
         Mockito.when(bookMapper.saveOne(Mockito.any(BookEo.class))).thenReturn(1);
 
         BookDto bookInput = new BookDto();
-        bookInput.setTitle("本草纲目");
-        bookInput.setAuthor("李时珍");
+        bookInput.setTitle("The Big Sleep");
+        bookInput.setAuthor("Mr. unknown");
         bookInput.setPublishTime(2020);
         bookInput.setBookNum("324-df-32324");
         bookInput.setDesc("medical book");
 
         Optional<BookDto> result = bookService.add(bookInput);
 
+        //TODO result.get canbe replace with a better way
         assertEquals(result.get().getPublishTime(),2020);
     }
 
@@ -53,8 +56,8 @@ public class BookServiceTest {
     public void testBookQuery() {
         BookEo bookReturn = new BookEo();
         bookReturn.setId(1);
-        bookReturn.setTitle("本草纲目");
-        bookReturn.setAuthor("李时珍");
+        bookReturn.setTitle("The Big Sleep");
+        bookReturn.setAuthor("Mr. unknown");
         bookReturn.setPublishTime(2020);
         bookReturn.setBookNum("324-df-32324");
         bookReturn.setDesc("medical book");
@@ -62,15 +65,15 @@ public class BookServiceTest {
         Mockito.when(bookMapper.queryById(Mockito.anyInt())).thenReturn(bookReturn);
 
         Optional<BookDto> result = bookService.query(1);
-        assertEquals("本草纲目", result.get().getTitle());
+        assertEquals("The Big Sleep", result.get().getTitle());
     }
 
     @Test
     public void testBookListAll() {
         BookEo bookReturn = new BookEo();
         bookReturn.setId(1);
-        bookReturn.setTitle("本草纲目");
-        bookReturn.setAuthor("李时珍");
+        bookReturn.setTitle("The Big Sleep");
+        bookReturn.setAuthor("Mr. unknown");
         bookReturn.setPublishTime(2020);
         bookReturn.setBookNum("324-df-32324");
         bookReturn.setDesc("medical book");
@@ -97,14 +100,14 @@ public class BookServiceTest {
         BookDto bookDto = new BookDto();
         Integer randomPublishTime = Math.abs(new Random().nextInt() % 2024);
         bookDto.setId(1);
-        bookDto.setTitle("狂人日记");
-        bookDto.setAuthor("鲁迅");
+        bookDto.setTitle("The Big Sleep");
+        bookDto.setAuthor("Mr. unknown");
         bookDto.setPublishTime(randomPublishTime);
 
         BookEo bookReturn = new BookEo();
         bookReturn.setId(1);
-        bookReturn.setTitle("本草纲目");
-        bookReturn.setAuthor("李时珍");
+        bookReturn.setTitle("The Big Sleep");
+        bookReturn.setAuthor("Mr. unknown");
         bookReturn.setPublishTime(2020);
         bookReturn.setBookNum("324-df-32324");
         bookReturn.setDesc("medical book");
@@ -112,12 +115,13 @@ public class BookServiceTest {
         Mockito.when(bookMapper.update(bookDto)).thenReturn(1);
         Mockito.when(bookMapper.queryById(1)).thenReturn(bookReturn);
 
+        //TODO can add more validation
         Optional<BookDto> update = bookService.update(bookDto);
 
         BookDto uodatedBookDto = update.get();
         assertEquals(uodatedBookDto.getId(),1);
-        assertEquals(uodatedBookDto.getTitle(),"狂人日记");
-        assertEquals(uodatedBookDto.getAuthor(),"鲁迅");
+        assertEquals(uodatedBookDto.getTitle(),"The Big Sleep");
+        assertEquals(uodatedBookDto.getAuthor(),"Mr. unknown");
         assertEquals(uodatedBookDto.getPublishTime(),randomPublishTime);
 
     }

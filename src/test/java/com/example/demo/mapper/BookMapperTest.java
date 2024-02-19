@@ -21,8 +21,8 @@ public class BookMapperTest {
     @Test
     public void testBookAdd() {
         BookEo bookEo = new BookEo();
-        bookEo.setTitle("本草纲目");
-        bookEo.setAuthor("李时珍");
+        bookEo.setTitle("The Big Sleep");
+        bookEo.setAuthor("Mr. unknown");
         bookEo.setPublishTime(2020);
         bookEo.setBookNum("324-df-32324");
         bookEo.setDesc("medical book");
@@ -30,16 +30,16 @@ public class BookMapperTest {
         bookMapper.saveOne(bookEo);
 
         assertNotNull(bookEo.getId());
-        assertEquals("本草纲目", bookEo.getTitle());
+        assertEquals("The Big Sleep", bookEo.getTitle());
 
     }
 
     @Test
     public void testQueryById() {
 
-        BookEo bookEo = bookMapper.queryById(2);
+        BookEo bookEo = bookMapper.queryById(1);
 
-        assertEquals("本草纲目", bookEo.getTitle());
+        assertEquals("The Big Sleep", bookEo.getTitle());
 
     }
 
@@ -48,15 +48,15 @@ public class BookMapperTest {
 
         List<BookEo> bookEos = bookMapper.listAll();
 
-        assertEquals("本草纲目", bookEos.get(1).getTitle());
+        assertEquals("The Big Sleep", bookEos.get(1).getTitle());
     }
 
     @Test
     public void testDelete() {
 
         BookEo bookEo = new BookEo();
-        bookEo.setTitle("本草纲目");
-        bookEo.setAuthor("李时珍");
+        bookEo.setTitle("The Big Sleep");
+        bookEo.setAuthor("Mr. unknown");
         bookEo.setPublishTime(2020);
         bookEo.setBookNum("324-df-32324");
         bookEo.setDesc("medical book");
@@ -74,8 +74,8 @@ public class BookMapperTest {
         BookEo bookEo = new BookEo();
         Integer randomPublishTime = Math.abs(new Random().nextInt() % 2024);
         bookEo.setId(1);
-        bookEo.setTitle("狂人日记");
-        bookEo.setAuthor("鲁迅");
+        bookEo.setTitle("The Big Sleep");
+        bookEo.setAuthor("Mr. unknown");
         bookEo.setPublishTime(randomPublishTime);
 
         BookDto bookDto = new BookDto();

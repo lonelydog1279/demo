@@ -7,13 +7,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/book")
-@CrossOrigin(origins = "*")
 public class BookController {
 
     @Resource
@@ -24,7 +24,7 @@ public class BookController {
     public Response add(@RequestBody BookDto bookDto) {
         Response response = new Response();
         Optional<BookDto> result = bookService.add(bookDto);
-        response.setData(result.get());
+        response.setData(result.orElseGet(BookDto::new));
         return response;
     }
 
@@ -33,7 +33,7 @@ public class BookController {
     public Response query(@PathVariable("id") Integer id) {
         Response response = new Response();
         Optional<BookDto> result = bookService.query(id);
-        response.setData(result.get());
+        response.setData(result.orElseGet(BookDto::new));
         return response;
     }
 
@@ -42,7 +42,7 @@ public class BookController {
     public Response list() {
         Response response = new Response();
         Optional<List<BookDto>> result = bookService.list();
-        response.setData(result.get());
+        response.setData(result.orElseGet(ArrayList<BookDto>::new));
         return response;
     }
 
@@ -62,7 +62,7 @@ public class BookController {
     public Response update(@RequestBody BookDto bookDto) {
         Response response = new Response();
         Optional<BookDto> update = bookService.update(bookDto);
-        response.setData(update.get());
+        response.setData(update.orElseGet(BookDto::new));
         return response;
     }
 
