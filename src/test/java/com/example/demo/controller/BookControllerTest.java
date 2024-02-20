@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.BookDto;
+import com.example.demo.exception.ExceptionEnum;
 import com.example.demo.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -136,7 +138,7 @@ public class BookControllerTest {
 
         Mockito.when(bookService.update(bookDto)).thenReturn(res);
 
-        String param = "{\"id\":1,\"title\":\"The Big Sleep\",\"author\":\"Mr. unknown\",\"publishTime\": \"" +randomPublishTime +"\"}";
+        String param = "{\"id\":1,\"title\":\"The Big Sleep\",\"author\":\"Mr. unknown\",\"publishTime\": \"" + randomPublishTime + "\"}";
 
         mockMvc.perform(put("/book/update")
                         .content(param)
@@ -144,5 +146,14 @@ public class BookControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("0"));
+    }
+
+    @Test
+    public void testGlobalExceptionHandler() throws Exception {
+        doThrow(new RuntimeException("unknown exception")).when(bookService).list();
+
+        mockMvc.perform(get("/book/list"))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(ExceptionEnum.INTERNAL_SERVER_ERROR.getResultCode()));
     }
 }
