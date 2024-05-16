@@ -1,0 +1,100 @@
+// 插入Scheme文档
+db.scheme.insertOne({
+  "_id": ObjectId("60aee20bf74c94039f627d5a"),
+  "schemeId": "S1",
+  "priority": 1,
+  "plans": [
+    { "$ref": "plan", "$id": ObjectId("60aee20bf74c94039f627d5b") },
+    { "$ref": "plan", "$id": ObjectId("60aee20bf74c94039f627d5c") }
+  ]
+});
+
+// 插入Plan文档
+db.plan.insertMany([
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d5b"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z"),
+    "documents": [
+      { "$ref": "document", "$id": ObjectId("60aee20bf74c94039f627d5d") },
+      { "$ref": "document", "$id": ObjectId("60aee20bf74c94039f627d5e") }
+    ],
+    "contents": [
+      { "$ref": "content", "$id": ObjectId("60aee20bf74c94039f627d5f") },
+      { "$ref": "content", "$id": ObjectId("60aee20bf74c94039f627d60") }
+    ],
+    "benefits": [
+      { "$ref": "benefit", "$id": ObjectId("60aee20bf74c94039f627d61") },
+      { "$ref": "benefit", "$id": ObjectId("60aee20bf74c94039f627d62") }
+    ],
+    "pricings": [
+      { "$ref": "pricing", "$id": ObjectId("60aee20bf74c94039f627d63") },
+      { "$ref": "pricing", "$id": ObjectId("60aee20bf74c94039f627d64") }
+    ]
+  }
+]);
+
+// 插入Document文档
+db.document.insertMany([
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d5d"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  },
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d5e"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  }
+]);
+
+// 插入Content文档
+db.content.insertMany([
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d5f"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  },
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d60"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  }
+]);
+
+// 插入Benefit文档
+db.benefit.insertMany([
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d61"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  },
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d62"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  }
+]);
+
+// 插入Pricing文档
+db.pricing.insertMany([
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d63"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  },
+  {
+    "_id": ObjectId("60aee20bf74c94039f627d64"),
+    "validIndicator": true,
+    "startDate": ISODate("2024-01-01T00:00:00Z"),
+    "endDate": ISODate("2024-12-31T00:00:00Z")
+  }
+]);
