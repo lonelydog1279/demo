@@ -1,0 +1,86 @@
+db.scheme.aggregate([
+  // Match stage to filter schemes by schemeId or validIndicator
+  {
+    $match: {
+      $or: [
+        { schemeId: "YOUR_SCHEME_ID" },
+        { schemeId: { $exists: false }, validIndicator: true }
+      ]
+    }
+  },
+  // Lookup stage to populate plans
+  {
+    $lookup: {
+      from: "plan",
+      localField: "plans",
+      foreignField: "_id",
+      as: "plans"
+    }
+  },
+  // Unwind stage to deconstruct plans array
+  { $unwind: "$plans" },
+  // Lookup stage to populate documents, contents, benefits, and pricings
+  {
+    $lookup: {
+      from: "document",
+      localField: "plans.documents",
+      foreignField: "_id",
+      as: "plans.documents"
+    }
+  },
+  {
+    $lookup: {
+      from: "content",
+      localField: "plans.contents",
+      foreignField: "_id",
+      as: "plans.contents"
+    }
+  },
+  {
+    $lookup: {
+      from: "benefit",
+      localField: "plans.benefits",
+      foreignField: "_id",
+      as: "plans.benefits"
+    }
+  },
+  {
+    $lookup: {
+      from: "pricing",
+      localField: "plans.pricings",
+      foreignField: "_id",
+      as: "plans.pricings"
+    }
+  },
+  // Project stage to filter out invalid plans
+  {
+    $project: {
+      schemeId: 1,
+      priority: 1,
+      plans: {
+        $filter: {
+          input: "$plans",
+          as: "plan",
+          cond: {
+            $and: [
+              { $eq: ["$$plan.validIndicator", true] },
+              { $lte: ["$$plan.startDate", new Date()] },
+              { $gte: ["$$plan.endDate", new Date()] }
+            ]
+          }
+        }
+      }
+    }
+  },
+  // Group stage to reconstruct the schemes with filtered plans
+  {
+    $group: {
+      _id: "$_id",
+      schemeId: { $first: "$schemeId" },
+      priority: { $first: "$priority" },
+      plans: { $push: "$plans" }
+    }
+  },
+  // Sort stage to prioritize schemes by priority
+  { $sort: { priority: -1 } }
+]);
