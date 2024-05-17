@@ -1,0 +1,168 @@
+db.scheme.aggregate([
+  // 获取当前日期
+  { 
+    $addFields: { 
+      currentDate: { 
+        $dateToString: { 
+          date: new Date(), 
+          format: "%Y-%m-%dT%H:%M:%SZ", 
+          timezone: "+08:00" 
+        } 
+      }
+    }
+  },
+  // 匹配 schemeId 或者 validIndicator, effectiveStartTime, effectiveEndTime
+  {
+    $match: {
+      $or: [
+        { schemeId: "scheme1" },  // 替换为传入的 schemeId
+        {
+          $and: [
+            { validIndicator: true },
+            { effectivestartTime: { $lte: "$currentDate" } },
+            { effectiveEndTime: { $gte: "$currentDate" } }
+          ]
+        }
+      ]
+    }
+  },
+  // 按优先级排序
+  { $sort: { priority: -1 } },
+  // 只取优先级最高的一个
+  { $limit: 1 },
+  // 关联 plan 表
+  {
+    $lookup: {
+      from: "plan",
+      localField: "_id",
+      foreignField: "schemeId",
+      as: "plans"
+    }
+  },
+  // 过滤 plans 列表
+  {
+    $set: {
+      plans: {
+        $filter: {
+          input: "$plans",
+          as: "plan",
+          cond: {
+            $and: [
+              { $eq: ["$$plan.validIndicator", true] },
+              { $lte: ["$$plan.effectivestartTime", "$currentDate"] },
+              { $gte: ["$$plan.effectiveEndTime", "$currentDate"] }
+            ]
+          }
+        }
+      }
+    }
+  },
+  // 关联 documents 表
+  {
+    $lookup: {
+      from: "document",
+      localField: "plans._id",
+      foreignField: "planId",
+      as: "plans.documents"
+    }
+  },
+  // 过滤 documents 列表
+  {
+    $set: {
+      "plans.documents": {
+        $filter: {
+          input: "$plans.documents",
+          as: "document",
+          cond: {
+            $and: [
+              { $eq: ["$$document.validIndicator", true] },
+              { $lte: ["$$document.effectivestartTime", "$currentDate"] },
+              { $gte: ["$$document.effectiveEndTime", "$currentDate"] }
+            ]
+          }
+        }
+      }
+    }
+  },
+  // 关联 contents 表
+  {
+    $lookup: {
+      from: "content",
+      localField: "plans._id",
+      foreignField: "planId",
+      as: "plans.contents"
+    }
+  },
+  // 过滤 contents 列表
+  {
+    $set: {
+      "plans.contents": {
+        $filter: {
+          input: "$plans.contents",
+          as: "content",
+          cond: {
+            $and: [
+              { $eq: ["$$content.validIndicator", true] },
+              { $lte: ["$$content.effectivestartTime", "$currentDate"] },
+              { $gte: ["$$content.effectiveEndTime", "$currentDate"] }
+            ]
+          }
+        }
+      }
+    }
+  },
+  // 关联 benefits 表
+  {
+    $lookup: {
+      from: "benefit",
+      localField: "plans._id",
+      foreignField: "planId",
+      as: "plans.benefits"
+    }
+  },
+  // 过滤 benefits 列表
+  {
+    $set: {
+      "plans.benefits": {
+        $filter: {
+          input: "$plans.benefits",
+          as: "benefit",
+          cond: {
+            $and: [
+              { $eq: ["$$benefit.validIndicator", true] },
+              { $lte: ["$$benefit.effectivestartTime", "$currentDate"] },
+              { $gte: ["$$benefit.effectiveEndTime", "$currentDate"] }
+            ]
+          }
+        }
+      }
+    }
+  },
+  // 关联 pricings 表
+  {
+    $lookup: {
+      from: "pricing",
+      localField: "plans._id",
+      foreignField: "planId",
+      as: "plans.pricings"
+    }
+  },
+  // 过滤 pricings 列表
+  {
+    $set: {
+      "plans.pricings": {
+        $filter: {
+          input: "$plans.pricings",
+          as: "pricing",
+          cond: {
+            $and: [
+              { $eq: ["$$pricing.validIndicator", true] },
+              { $lte: ["$$pricing.effectivestartTime", "$currentDate"] },
+              { $gte: ["$$pricing.effectiveEndTime", "$currentDate"] }
+            ]
+          }
+        }
+      }
+    }
+  }
+]);
