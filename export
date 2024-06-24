@@ -1,0 +1,153 @@
+package com.example;
+
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.crypt.EncryptionMode;
+import org.apache.poi.poifs.crypt.Encryptor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ByteArrayResource;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.security.GeneralSecurityException;
+import java.util.List;
+
+public class ExportFileService<T> {
+
+    private List<T> dataList;
+    private Class<T> typeClass;
+    private List<String> headerList;
+
+    public ExportFileService(List<T> dataList, Class<T> typeClass, List<String> headerList) {
+        this.dataList = dataList;
+        this.typeClass = typeClass;
+        this.headerList = headerList;
+    }
+
+    public ByteArrayResource exportToExcel() {
+        Workbook workbook = createWorkbook();
+        return writeWorkbookToByteArrayResource(workbook);
+    }
+
+    public ByteArrayResource exportToExcel(String password) {
+        Workbook workbook = createWorkbook();
+        return encryptWorkbook(workbook, password);
+    }
+
+    private Workbook createWorkbook() {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Data");
+
+        // Create header row
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headerList.size(); i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headerList.get(i));
+        }
+
+        // Create data rows
+        for (int i = 0; i < dataList.size(); i++) {
+            Row row = sheet.createRow(i + 1);
+            T data = dataList.get(i);
+            for (int j = 0; j < headerList.size(); j++) {
+                Cell cell = row.createCell(j);
+                String fieldName = headerList.get(j);
+                try {
+                    Field field = typeClass.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    Object value = field.get(data);
+                    if (value != null) {
+                        cell.setCellValue(value.toString());
+                    }
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return workbook;
+    }
+
+    private ByteArrayResource writeWorkbookToByteArrayResource(Workbook workbook) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            workbook.write(bos);
+            workbook.close();
+            return new ByteArrayResource(bos.toByteArray());
+        } catch (IOException e) {
+            System.err.println("Error writing to byte array: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private ByteArrayResource encryptWorkbook(Workbook workbook, String password) {
+        try (POIFSFileSystem fs = new POIFSFileSystem();
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+
+            EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile);
+            Encryptor encryptor = info.getEncryptor();
+            encryptor.confirmPassword(password);
+
+            try (OutputStream os = encryptor.getDataStream(fs)) {
+                workbook.write(os);
+            }
+
+            workbook.close();
+
+            fs.writeFilesystem(bos);
+            return new ByteArrayResource(bos.toByteArray());
+        } catch (IOException | GeneralSecurityException e) {
+            System.err.println("Error encrypting workbook: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        List<String> headerList = List.of("name", "age", "country");
+        List<Person> dataList = List.of(
+                new Person("John Doe", 30, "USA"),
+                new Person("Jane Smith", 25, "UK"),
+                new Person("Jack Johnson", 45, "Canada")
+        );
+
+        ExportFileService<Person> exportService = new ExportFileService<>(dataList, Person.class, headerList);
+
+        // Export without encryption
+        ByteArrayResource resource = exportService.exportToExcel();
+        if (resource != null) {
+            saveToFile(resource, "output.xlsx");
+            System.out.println("Data successfully exported to ByteArrayResource without encryption.");
+        }
+
+        // Export with encryption
+        ByteArrayResource encryptedResource = exportService.exportToExcel("password123");
+        if (encryptedResource != null) {
+            saveToFile(encryptedResource, "encrypted_output.xlsx");
+            System.out.println("Data successfully exported to ByteArrayResource with encryption.");
+        }
+    }
+
+    private static void saveToFile(ByteArrayResource resource, String fileName) {
+        try (FileOutputStream fos = new FileOutputStream(fileName)) {
+            fos.write(resource.getByteArray());
+            System.out.println("File saved to " + fileName);
+        } catch (IOException e) {
+            System.err.println("Error saving file: " + e.getMessage());
+        }
+    }
+}
+
+class Person {
+    private String name;
+    private int age;
+    private String country;
+
+    public Person(String name, int age, String country) {
+        this.name = name;
+        this.age = age;
+        this.country = country;
+    }
+
+    // Getters and setters (omitted for brevity)
+}
+
