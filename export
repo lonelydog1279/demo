@@ -1,5 +1,3 @@
-package com.example;
-
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.crypt.EncryptionMode;
 import org.apache.poi.poifs.crypt.Encryptor;
@@ -7,11 +5,17 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
+import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExportFileService<T> {
 
@@ -33,6 +37,16 @@ public class ExportFileService<T> {
     public ByteArrayResource exportToExcel(String password) {
         Workbook workbook = createWorkbook();
         return encryptWorkbook(workbook, password);
+    }
+
+    public ByteArrayResource exportToCSV() {
+        String csvContent = createCSVContent();
+        return writeCSVToByteArrayResource(csvContent);
+    }
+
+    public ByteArrayResource exportToCSV(String password) {
+        String csvContent = createCSVContent();
+        return encryptCSV(csvContent, password);
     }
 
     private Workbook createWorkbook() {
@@ -96,8 +110,66 @@ public class ExportFileService<T> {
 
             fs.writeFilesystem(bos);
             return new ByteArrayResource(bos.toByteArray());
-        } catch (IOException | GeneralSecurityException e) {
+        } catch (IOException e) {
             System.err.println("Error encrypting workbook: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String createCSVContent() {
+        StringBuilder sb = new StringBuilder();
+
+        // Add header row
+        sb.append(String.join(",", headerList)).append("\n");
+
+        // Add data rows
+        for (T data : dataList) {
+            List<String> rowValues = headerList.stream().map(fieldName -> {
+                try {
+                    Field field = typeClass.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    Object value = field.get(data);
+                    return value != null ? value.toString() : "";
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                    return "";
+                }
+            }).collect(Collectors.toList());
+            sb.append(String.join(",", rowValues)).append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private ByteArrayResource writeCSVToByteArrayResource(String csvContent) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            bos.write(csvContent.getBytes());
+            return new ByteArrayResource(bos.toByteArray());
+        } catch (IOException e) {
+            System.err.println("Error writing CSV to byte array: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private ByteArrayResource encryptCSV(String csvContent, String password) {
+        try {
+            // Generate a key from the password
+            byte[] key = password.getBytes("UTF-8");
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            SecureRandom secureRandom = new SecureRandom(key);
+            keyGen.init(128, secureRandom);
+            SecretKey secretKey = keyGen.generateKey();
+
+            // Encrypt the CSV content
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedBytes = cipher.doFinal(csvContent.getBytes("UTF-8"));
+
+            // Encode to Base64 for easy storage/transfer
+            String encryptedContent = Base64.encodeBase64String(encryptedBytes);
+            return new ByteArrayResource(encryptedContent.getBytes("UTF-8"));
+        } catch (Exception e) {
+            System.err.println("Error encrypting CSV: " + e.getMessage());
             return null;
         }
     }
@@ -105,49 +177,40 @@ public class ExportFileService<T> {
     public static void main(String[] args) {
         List<String> headerList = List.of("name", "age", "country");
         List<Person> dataList = List.of(
-                new Person("John Doe", 30, "USA"),
-                new Person("Jane Smith", 25, "UK"),
-                new Person("Jack Johnson", 45, "Canada")
+            new Person("John Doe", 30, "USA"),
+            new Person("Jane Smith", 25, "UK"),
+            new Person("Jack Johnson", 45, "Canada")
         );
 
         ExportFileService<Person> exportService = new ExportFileService<>(dataList, Person.class, headerList);
 
-        // Export without encryption
+        // Export to Excel without encryption
         ByteArrayResource resource = exportService.exportToExcel();
         if (resource != null) {
             saveToFile(resource, "output.xlsx");
             System.out.println("Data successfully exported to ByteArrayResource without encryption.");
         }
 
-        // Export with encryption
+        // Export to Excel with encryption
         ByteArrayResource encryptedResource = exportService.exportToExcel("password123");
         if (encryptedResource != null) {
             saveToFile(encryptedResource, "encrypted_output.xlsx");
             System.out.println("Data successfully exported to ByteArrayResource with encryption.");
         }
-    }
 
-    private static void saveToFile(ByteArrayResource resource, String fileName) {
-        try (FileOutputStream fos = new FileOutputStream(fileName)) {
-            fos.write(resource.getByteArray());
-            System.out.println("File saved to " + fileName);
-        } catch (IOException e) {
-            System.err.println("Error saving file: " + e.getMessage());
+        // Export to CSV without encryption
+        ByteArrayResource csvResource = exportService.exportToCSV();
+        if (csvResource != null) {
+            saveToFile(csvResource, "output.csv");
+            System.out.println("Data successfully exported to ByteArrayResource as CSV.");
+        }
+
+        // Export to CSV with encryption
+        ByteArrayResource encryptedCSVResource = exportService.exportToCSV("password123");
+        if (encryptedCSVResource != null) {
+            saveToFile(encryptedCSVResource, "encrypted_output.csv");
+            System.out.println("Data successfully exported to ByteArrayResource as encrypted CSV.");
         }
     }
-}
 
-class Person {
-    private String name;
-    private int age;
-    private String country;
-
-    public Person(String name, int age, String country) {
-        this.name = name;
-        this.age = age;
-        this.country = country;
-    }
-
-    // Getters and setters (omitted for brevity)
-}
-
+    private static void saveToFile(ByteArrayResource resource, String
