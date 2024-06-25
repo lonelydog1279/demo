@@ -152,25 +152,41 @@ public class ExportFileService<T> {
     }
 
     private ByteArrayResource encryptCSV(String csvContent, String password) {
+     File tempFile = null;
         try {
-            // Generate a key from the password
-            byte[] key = password.getBytes("UTF-8");
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            SecureRandom secureRandom = new SecureRandom(key);
-            keyGen.init(128, secureRandom);
-            SecretKey secretKey = keyGen.generateKey();
+            // Write CSV content to a temporary file
+            tempFile = File.createTempFile("tempCsv", ".csv");
+            try (FileWriter writer = new FileWriter(tempFile)) {
+                writer.write(csvContent);
+            }
 
-            // Encrypt the CSV content
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(csvContent.getBytes("UTF-8"));
+            // Encrypt the temporary file using Apache POI
+            try (POIFSFileSystem fs = new POIFSFileSystem();
+                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
-            // Encode to Base64 for easy storage/transfer
-            String encryptedContent = Base64.encodeBase64String(encryptedBytes);
-            return new ByteArrayResource(encryptedContent.getBytes("UTF-8"));
-        } catch (Exception e) {
+                EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile);
+                Encryptor encryptor = info.getEncryptor();
+                encryptor.confirmPassword(password);
+
+                try (OutputStream os = encryptor.getDataStream(fs);
+                     FileInputStream fis = new FileInputStream(tempFile)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        os.write(buffer, 0, bytesRead);
+                    }
+                }
+
+                fs.writeFilesystem(bos);
+                return new ByteArrayResource(bos.toByteArray());
+            }
+        } catch (IOException e) {
             System.err.println("Error encrypting CSV: " + e.getMessage());
             return null;
+        } finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
     }
 
