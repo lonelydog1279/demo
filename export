@@ -152,40 +152,50 @@ public class ExportFileService<T> {
     }
 
     private ByteArrayResource encryptCSV(String csvContent, String password) {
-     File tempFile = null;
+      File tempCsvFile = null;
+        File tempZipFile = null;
         try {
             // Write CSV content to a temporary file
-            tempFile = File.createTempFile("tempCsv", ".csv");
-            try (FileWriter writer = new FileWriter(tempFile)) {
-                writer.write(csvContent);
+            tempCsvFile = File.createTempFile("tempCsv", ".csv");
+            try (FileOutputStream fos = new FileOutputStream(tempCsvFile)) {
+                fos.write(csvContent.getBytes(StandardCharsets.UTF_8));
             }
 
-            // Encrypt the temporary file using Apache POI
-            try (POIFSFileSystem fs = new POIFSFileSystem();
-                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            // Create a temporary ZIP file
+            tempZipFile = File.createTempFile("tempZip", ".zip");
 
-                EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile);
-                Encryptor encryptor = info.getEncryptor();
-                encryptor.confirmPassword(password);
+            // Initialize ZipFile with the ZIP file path and password
+            ZipFile zipFile = new ZipFile(tempZipFile, password.toCharArray());
 
-                try (OutputStream os = encryptor.getDataStream(fs);
-                     FileInputStream fis = new FileInputStream(tempFile)) {
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = fis.read(buffer)) != -1) {
-                        os.write(buffer, 0, bytesRead);
-                    }
+            // Configure ZIP parameters
+            ZipParameters zipParameters = new ZipParameters();
+            zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
+            zipParameters.setCompressionLevel(CompressionLevel.NORMAL);
+            zipParameters.setEncryptFiles(true);
+            zipParameters.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
+
+            // Add the CSV file to the ZIP file with the configured parameters
+            zipFile.addFile(tempCsvFile, zipParameters);
+
+            // Convert the ZIP file to ByteArrayResource
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 FileInputStream fis = new FileInputStream(tempZipFile)) {
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = fis.read(buffer)) != -1) {
+                    bos.write(buffer, 0, len);
                 }
-
-                fs.writeFilesystem(bos);
                 return new ByteArrayResource(bos.toByteArray());
             }
         } catch (IOException e) {
-            System.err.println("Error encrypting CSV: " + e.getMessage());
+            System.err.println("Error encrypting CSV with ZIP: " + e.getMessage());
             return null;
         } finally {
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
+            if (tempCsvFile != null && tempCsvFile.exists()) {
+                tempCsvFile.delete();
+            }
+            if (tempZipFile != null && tempZipFile.exists()) {
+                tempZipFile.delete();
             }
         }
     }
